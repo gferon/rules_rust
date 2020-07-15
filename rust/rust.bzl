@@ -33,6 +33,10 @@ load(
     _rust_clippy_aspect = "rust_clippy_aspect",
     _rust_clippy = "rust_clippy",
 )
+load(
+    "@io_bazel_rules_rust//rust:private/cargo.bzl",
+    _cargo_workspace = "cargo_workspace",
+)
 
 rust_library = _rust_library
 """ See @io_bazel_rules_rust//rust:private/rust.bzl for a complete description. """
@@ -60,3 +64,6 @@ rust_clippy_aspect = _rust_clippy_aspect
 
 rust_clippy = _rust_clippy
 """ See @io_bazel_rules_rust//rust:private/clippy.bzl for a complete description. """
+
+cargo_workspace = _cargo_workspace
+""" See @io_bazel_rules_rust//rust:private/cargo.bzl for a complete description. """

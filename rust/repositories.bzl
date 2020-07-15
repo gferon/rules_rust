@@ -106,6 +106,12 @@ filegroup(
 )
 
 filegroup(
+    name = "cargo",
+    srcs = ["bin/cargo{binary_ext}"],
+    visibility = ["//visibility:public"]
+)
+
+filegroup(
     name = "rustc_lib",
     srcs = glob(
         [
@@ -211,6 +217,7 @@ rust_toolchain(
     name = "{toolchain_name}_impl",
     rust_doc = "@{workspace_name}//:rustdoc",
     rust_lib = "@{workspace_name}//:rust_lib-{target_triple}",
+    cargo = "@{workspace_name}//:cargo",
     rustc = "@{workspace_name}//:rustc",
     rustfmt = "@{workspace_name}//:rustfmt_bin",
     clippy_driver = "@{workspace_name}//:clippy_driver_bin",
@@ -364,7 +371,7 @@ def _load_rust_compiler(ctx):
         iso_date = ctx.attr.iso_date,
         target_triple = target_triple,
         tool_name = "rust",
-        tool_subdirectories = ["rustc", "clippy-preview"],
+        tool_subdirectories = ["rustc", "clippy-preview", "cargo"],
         version = ctx.attr.version,
     )
 

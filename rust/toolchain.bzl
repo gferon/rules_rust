@@ -14,6 +14,7 @@ def _rust_toolchain_impl(ctx):
 
     toolchain = platform_common.ToolchainInfo(
         rustc = ctx.file.rustc,
+        cargo = ctx.file.cargo,
         rust_doc = ctx.file.rust_doc,
         rustfmt = ctx.file.rustfmt,
         clippy_driver = ctx.file.clippy_driver,
@@ -38,6 +39,10 @@ rust_toolchain = rule(
     attrs = {
         "rustc": attr.label(
             doc = "The location of the `rustc` binary. Can be a direct source or a filegroup containing one item.",
+            allow_single_file = True,
+        ),
+        "cargo": attr.label(
+            doc = "The location of the `cargo` binary. Can be a direct source or a filegroup containing one itme.",
             allow_single_file = True,
         ),
         "rust_doc": attr.label(
