@@ -32,7 +32,7 @@ def strip_target(elems):
         if skip_next:
             skip_next = False
             continue
-        if elem == "-target" or elem == "-isysroot":
+        if elem == "-arch" or elem == "-target" or elem == "-isysroot":
             skip_next = True
             continue
         out_elems.append(elem)
@@ -293,7 +293,7 @@ _build_script_run = rule(
                 List of compiler flags passed to `rustc`.
 
                 These strings are subject to Make variable expansion for predefined
-                source/output path variables like `$location`, `$execpath`, and 
+                source/output path variables like `$location`, `$execpath`, and
                 `$rootpath`. This expansion is useful if you wish to pass a generated
                 file of arguments to rustc: `@$(location //package:target)`.
             """),
