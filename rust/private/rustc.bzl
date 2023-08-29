@@ -37,6 +37,7 @@ load(
     "is_exec_configuration",
     "make_static_lib_symlink",
     "relativize",
+    "transform_deps",
 )
 
 BuildInfo = _BuildInfo
@@ -389,13 +390,14 @@ def get_cc_user_link_flags(ctx):
     """
     return ctx.fragments.cpp.linkopts
 
-def get_linker_and_args(ctx, attr, crate_type, cc_toolchain, feature_configuration, rpaths, rustdoc = False):
+def get_linker_and_args(ctx, attr, crate_type, deps, cc_toolchain, feature_configuration, rpaths, rustdoc = False):
     """Gathers cc_common linker information
 
     Args:
         ctx (ctx): The current target's context object
         attr (struct): Attributes to use in gathering linker args
         crate_type (str): The target crate's type (i.e. "bin", "proc-macro", etc.).
+        deps (list of DepVariantInfos): Current target's dependencies.
         cc_toolchain (CcToolchain): cc_toolchain for which we are creating build variables.
         feature_configuration (FeatureConfiguration): Feature configuration to be queried.
         rpaths (depset): Depset of directories where loader will look for libraries at runtime.
@@ -430,11 +432,12 @@ def get_linker_and_args(ctx, attr, crate_type, cc_toolchain, feature_configurati
 
     # Add linkopt's from dependencies. This includes linkopts from transitive
     # dependencies since they get merged up.
-    for dep in getattr(attr, "deps", []):
-        if CcInfo in dep and dep[CcInfo].linking_context:
-            for linker_input in dep[CcInfo].linking_context.linker_inputs.to_list():
+    for dep in deps:
+        if dep.cc_info and dep.cc_info.linking_context:
+            for linker_input in dep.cc_info.linking_context.linker_inputs.to_list():
                 for flag in linker_input.user_link_flags:
                     user_link_flags.append(flag)
+
     link_variables = cc_common.create_link_variables(
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -993,7 +996,8 @@ def construct_arguments(
             else:
                 rpaths = depset()
 
-            ld, link_args, link_env = get_linker_and_args(ctx, attr, crate_info.type, cc_toolchain, feature_configuration, rpaths, rustdoc)
+            deps = transform_deps(ctx.attr.deps)
+            ld, link_args, link_env = get_linker_and_args(ctx, attr, crate_info.type, deps, cc_toolchain, feature_configuration, rpaths, rustdoc)
 
             env.update(link_env)
             rustc_flags.add(ld, format = "--codegen=linker=%s")

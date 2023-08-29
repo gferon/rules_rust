@@ -12,7 +12,7 @@ load("//rust:rust_common.bzl", "BuildInfo", "DepInfo")
 load("//rust/private:rustc.bzl", "get_compilation_mode_opts", "get_linker_and_args")
 
 # buildifier: disable=bzl-visibility
-load("//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain", _name_to_crate_name = "name_to_crate_name")
+load("//rust/private:utils.bzl", "dedent", "expand_dict_value_locations", "find_cc_toolchain", "find_toolchain", "transform_deps", _name_to_crate_name = "name_to_crate_name")
 load(":features.bzl", "feature_enabled")
 
 # Reexport for cargo_build_script_wrapper.bzl
@@ -135,7 +135,8 @@ def _cargo_build_script_impl(ctx):
     # Pull in env vars which may be required for the cc_toolchain to work (e.g. on OSX, the SDK version).
     # We hope that the linker env is sufficient for the whole cc_toolchain.
     cc_toolchain, feature_configuration = find_cc_toolchain(ctx)
-    linker, link_args, linker_env = get_linker_and_args(ctx, ctx.attr, "bin", cc_toolchain, feature_configuration, None)
+    deps = transform_deps(ctx.attr.deps)
+    linker, link_args, linker_env = get_linker_and_args(ctx, ctx.attr, "bin", deps, cc_toolchain, feature_configuration, None)
     env.update(**linker_env)
     env["LD"] = linker
     env["LDFLAGS"] = " ".join(_pwd_flags(link_args))
@@ -311,7 +312,7 @@ cargo_build_script = rule(
                 List of compiler flags passed to `rustc`.
 
                 These strings are subject to Make variable expansion for predefined
-                source/output path variables like `$location`, `$execpath`, and 
+                source/output path variables like `$location`, `$execpath`, and
                 `$rootpath`. This expansion is useful if you wish to pass a generated
                 file of arguments to rustc: `@$(location //package:target)`.
             """),

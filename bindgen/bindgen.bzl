@@ -20,7 +20,7 @@ load("//rust:defs.bzl", "rust_library")
 load("//rust/private:rustc.bzl", "get_linker_and_args")
 
 # buildifier: disable=bzl-visibility
-load("//rust/private:utils.bzl", "find_cc_toolchain", "get_preferred_artifact")
+load("//rust/private:utils.bzl", "find_cc_toolchain", "get_preferred_artifact", "transform_deps")
 
 # TODO(hlopko): use the more robust logic from rustc.bzl also here, through a reasonable API.
 def _get_libs_for_static_executable(dep):
@@ -135,7 +135,8 @@ def _rust_bindgen_impl(ctx):
     args.add_all(ctx.attr.clang_flags)
 
     cc_toolchain, feature_configuration = find_cc_toolchain(ctx)
-    _, _, linker_env = get_linker_and_args(ctx, ctx.attr, "bin", cc_toolchain, feature_configuration, None)
+    deps = transform_deps(ctx.attr.deps)
+    _, _, linker_env = get_linker_and_args(ctx, ctx.attr, "bin", deps, cc_toolchain, feature_configuration, None)
     env.update(**linker_env)
 
     # Allow sysroots configured by the toolchain to be added to Clang arguments.
@@ -227,7 +228,7 @@ rust_bindgen_toolchain = rule(
     doc = """\
 The tools required for the `rust_bindgen` rule.
 
-This rule depends on the [`bindgen`](https://crates.io/crates/bindgen) binary crate, and it 
+This rule depends on the [`bindgen`](https://crates.io/crates/bindgen) binary crate, and it
 in turn depends on both a clang binary and the clang library. To obtain these dependencies,
 `rust_bindgen_dependencies` imports bindgen and its dependencies.
 
